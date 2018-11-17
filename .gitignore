@@ -33,3 +33,6 @@ output.json
 #NDK
 obj/
 .externalNativeBuild
+
+#PHP Storm
+serwer/.idea/
