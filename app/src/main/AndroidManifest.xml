@@ -15,14 +15,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:hardwareAccelerated="true">
-        <activity android:name=".MainActivity">
+        <activity android:name=".BasicMapActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".BasicMapActivity"></activity>
+        <activity android:name=".MainActivity"></activity>
         <meta-data android:name="com.here.android.maps.appid" android:value="taoJfHMlGbrZFKPLClO4"/>
         <meta-data android:name="com.here.android.maps.apptoken" android:value="fJWeku8YlzRBcbItvYvTJQ"/>
     </application>

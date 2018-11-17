@@ -9,7 +9,7 @@ import com.here.android.mpa.common.OnEngineInitListener;
 import com.here.android.mpa.mapping.Map;
 import com.here.android.mpa.mapping.MapFragment;
 
-public class BasicMapActivity extends Activity {
+public class BasicMapActivity extends AppCompatActivity {
 
     // map embedded in the map fragment
     private Map map = null;
@@ -24,7 +24,7 @@ public class BasicMapActivity extends Activity {
     }
 
     private void initialize() {
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_basic_map);
 
         // Search for the map fragment to finish setup by calling init().
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.mapfragment);
