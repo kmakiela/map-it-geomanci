@@ -5,7 +5,7 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
 public class RESTprovider {
-    private static final String BASE_URL = "https://serwer1804469.home.pl/mapit/routes/test";
+    private static final String BASE_URL = "https://serwer1804469.home.pl/mapit/routes/";
     private static AsyncHttpClient client = new AsyncHttpClient();
 
     public static void get(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {

@@ -1,38 +1,30 @@
 package com.example.kbak.mapitfresh;
 
-import android.app.Activity;
 import android.gesture.GestureOverlayView;
-import android.graphics.Color;
 import android.graphics.PointF;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.here.android.mpa.common.GeoCoordinate;
-import com.here.android.mpa.common.Image;
 import com.here.android.mpa.common.ViewObject;
-import com.here.android.mpa.mapping.MapCircle;
-import com.here.android.mpa.mapping.MapFragment;
-import com.here.android.mpa.mapping.MapGesture;
 import com.here.android.mpa.mapping.Map;
-import com.here.android.mpa.mapping.MapMarker;
+import com.here.android.mpa.mapping.MapGesture;
+import com.here.android.mpa.mapping.MapObject;
 import com.here.android.mpa.search.Address;
 import com.here.android.mpa.search.ErrorCode;
 import com.here.android.mpa.search.ResultListener;
 import com.here.android.mpa.search.ReverseGeocodeRequest;
 
-import java.io.IOException;
 import java.util.List;
 
-public class MapOnGestureListener implements GestureOverlayView.OnGestureListener, MapGesture.OnGestureListener {
+public class RouteOnGestureListener implements GestureOverlayView.OnGestureListener, MapGesture.OnGestureListener {
     private Map map;
     private TextView addressField;
     private TextView countryField;
     private ActualPosition actualPosition;
 
 
-    MapOnGestureListener(Map map, TextView addressField, TextView countryField, ActualPosition actualPosition) {
+    RouteOnGestureListener(Map map, TextView addressField, TextView countryField, ActualPosition actualPosition) {
         this.map = map;
         this.addressField = addressField;
         this.countryField = countryField;
@@ -57,6 +49,17 @@ public class MapOnGestureListener implements GestureOverlayView.OnGestureListene
 
     @Override
     public boolean onMapObjectsSelected(List<ViewObject> objects) {
+        for (ViewObject viewObj : objects) {
+            if (viewObj.getBaseType() == ViewObject.Type.USER_OBJECT) {
+                if (((MapObject)viewObj).getType() == MapObject.Type.ROUTE) {
+                    // At this point we have the originally added
+                    // map marker, so we can do something with it
+                    // (like change the visibility, or more
+                    // marker-specific actions)
+                    ((MapObject)viewObj).setVisible(false);
+                }
+            }
+        }
         return false;
     }
 
@@ -64,22 +67,12 @@ public class MapOnGestureListener implements GestureOverlayView.OnGestureListene
     public boolean onTapEvent(PointF p) {
         double level = map.getMinZoomLevel() + map.getMaxZoomLevel() / 2;
         GeoCoordinate position = map.pixelToGeo(p);
-        map.setCenter(new GeoCoordinate(position), Map.Animation.LINEAR);
-        map.setZoomLevel(level * 2, Map.Animation.LINEAR);
+        map.setCenter(new GeoCoordinate(position),
+                Map.Animation.LINEAR);
+        map.setZoomLevel(level);
         ResultListener<Address> listener = new TapGeocodeListener(addressField, countryField);
         ReverseGeocodeRequest request = new ReverseGeocodeRequest(position);
         actualPosition.position = position;
-
-        if (actualPosition.marker != null) {
-            map.removeMapObject(actualPosition.marker);
-        }
-        MapCircle m_circle = new MapCircle(100.0, new GeoCoordinate(position));
-        m_circle.setLineColor(Color.BLACK);
-        m_circle.setFillColor(Color.MAGENTA);
-        m_circle.setLineWidth(2);
-        actualPosition.marker = m_circle;
-        map.addMapObject(actualPosition.marker);
-
         if (request.execute(listener) != ErrorCode.NONE){
             addressField.setText("Invalid starting point");
         }

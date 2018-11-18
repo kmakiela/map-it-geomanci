@@ -1,6 +1,7 @@
 package com.example.kbak.mapitfresh;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -20,6 +21,7 @@ import com.here.android.mpa.common.Image;
 import com.here.android.mpa.common.OnEngineInitListener;
 import com.here.android.mpa.common.ViewObject;
 import com.here.android.mpa.mapping.Map;
+import com.here.android.mpa.mapping.MapCircle;
 import com.here.android.mpa.mapping.MapFragment;
 import com.here.android.mpa.mapping.MapGesture;
 import com.here.android.mpa.mapping.MapMarker;
@@ -82,25 +84,33 @@ public class BasicMapActivity extends AppCompatActivity {
                     map = mapFragment.getMap();
                     map.setZoomLevel((map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
                     map.setCenter(new GeoCoordinate(50.099433, 19.9955930, 0), Map.Animation.NONE);
-                    mapFragment.getMapGesture().addOnGestureListener(new MapOnGestureListener(map, addressField, countryField, actualPosition));
+                    mapFragment.getMapGesture().addOnGestureListener(
+                            new MapOnGestureListener(map, addressField, countryField, actualPosition));
                 } else {
                     System.out.println("ERROR: Cannot initialize Map Fragment");
                 }
-
             }
         });
 
         okButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                MapCircle m_circle = new MapCircle(70.0, actualPosition.position);
+                m_circle.setLineColor(Color.BLACK);
+                m_circle.setFillColor(Color.RED);
+                m_circle.setLineWidth(2);
+                map.addMapObject(m_circle);
+
                 wayPoints.add(actualPosition.position);
                 routePlan.addWaypoint(actualPosition.position);
-                if (wayPoints.size() >= 10)
+                if (wayPoints.size() >= 4)
                     sendButton.setEnabled(true);
             }
         });
 
         sendButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                map.setZoomLevel(map.getMinZoomLevel() + map.getMaxZoomLevel() / 2);
+
                 class RouteListener implements RouteManager.Listener {
                     public void onProgress(int percentage) {
                     }
@@ -116,22 +126,23 @@ public class BasicMapActivity extends AppCompatActivity {
 
                 RequestParams rp = new RequestParams();
                 Gson gson = new Gson();
-                rp.add("waypoints", gson.toJson(wayPoints));
+                //rp.add("waypoints", gson.toJson(wayPoints));
 
-                RESTprovider.get("/?query=", rp, new TextHttpResponseHandler() {
+                RESTprovider.get("/?query=" + gson.toJson(wayPoints), null, new TextHttpResponseHandler() {
                     @Override
                     public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                        Log.d("postObjectJSON", throwable.toString());
+                        Log.d("failJSON", throwable.toString());
                     }
 
                     @Override
                     public void onSuccess(int statusCode, Header[] headers, String response) {
-                            Log.d("postObjectJSON", response.toString());
-                            sendButton.setText("Success!");
+                        Log.d("succJSON", response.toString());
+                        sendButton.setText("Success!");
                     }
                 });
 
                 rm.calculateRoute(routePlan, new RouteListener());
+
             }
         });
     }
