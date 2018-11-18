@@ -22,10 +22,6 @@ import com.here.android.mpa.mapping.MapFragment;
 import com.here.android.mpa.mapping.MapGesture;
 import com.here.android.mpa.mapping.MapMarker;
 import com.here.android.mpa.mapping.MapObject;
-<<<<<<< Updated upstream
-
-import org.w3c.dom.Text;
-=======
 import com.here.android.mpa.mapping.MapRoute;
 import com.here.android.mpa.routing.RouteManager;
 import com.here.android.mpa.routing.RoutePlan;
@@ -33,7 +29,6 @@ import com.here.android.mpa.routing.RouteResult;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.TextHttpResponseHandler;
->>>>>>> Stashed changes
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -74,14 +69,8 @@ public class BasicMapActivity extends AppCompatActivity {
                 if (error == OnEngineInitListener.Error.NONE) {
                     map = mapFragment.getMap();
                     map.setZoomLevel((map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
-<<<<<<< Updated upstream
-                    mapFragment.getMapGesture().addOnGestureListener(new MapOnGestureListener(map, addressField, actualPosition));
-
-
-=======
                     map.setCenter(new GeoCoordinate(50.099433, 19.9955930, 0), Map.Animation.NONE);
                     mapFragment.getMapGesture().addOnGestureListener(new MapOnGestureListener(map, addressField, countryField, actualPosition));
->>>>>>> Stashed changes
                 } else {
                     System.out.println("ERROR: Cannot initialize Map Fragment");
                 }
@@ -92,8 +81,6 @@ public class BasicMapActivity extends AppCompatActivity {
         okButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 wayPoints.add(actualPosition.position);
-<<<<<<< Updated upstream
-=======
                 routePlan.addWaypoint(actualPosition.position);
                 if (wayPoints.size() >= 10)
                     sendButton.setEnabled(true);
@@ -134,8 +121,6 @@ public class BasicMapActivity extends AppCompatActivity {
                 });
 
                 rm.calculateRoute(routePlan, new RouteListener());
-
->>>>>>> Stashed changes
             }
         });
     }
