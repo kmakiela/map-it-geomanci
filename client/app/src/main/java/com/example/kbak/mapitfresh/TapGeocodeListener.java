@@ -8,17 +8,19 @@ import com.here.android.mpa.search.ResultListener;
 
 public class TapGeocodeListener implements ResultListener<Address> {
     private TextView addressField;
+    private TextView countryField;
 
-    TapGeocodeListener(TextView addressText) {
-        this.addressField = addressText;
+    TapGeocodeListener(TextView addressField, TextView countryField) {
+        this.addressField = addressField;
+        this.countryField = countryField;
     }
 
     @Override
     public void onCompleted(Address data, ErrorCode error) {
         if (error != ErrorCode.NONE) {
         } else {
-            addressField.setText(data.getText());
-
+            addressField.setText(data.getStreet() + " " + data.getHouseNumber());
+            countryField.setText(data.getPostalCode() + " " + data.getCountryName());
         }
     }
 }

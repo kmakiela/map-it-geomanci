@@ -11,10 +11,12 @@ import android.app.Activity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.here.android.mpa.common.GeoCoordinate;
+import com.here.android.mpa.common.Image;
 import com.here.android.mpa.common.OnEngineInitListener;
 import com.here.android.mpa.common.ViewObject;
 import com.here.android.mpa.mapping.Map;
@@ -44,10 +46,15 @@ public class BasicMapActivity extends AppCompatActivity {
     // map fragment embedded in this activity
     private MapFragment mapFragment = null;
     private TextView addressField = null;
+    private TextView countryField = null;
     private Button okButton = null;
+    private Button sendButton = null;
 
     private List<GeoCoordinate> wayPoints = new LinkedList<>();
-    private ActualPosition actualPosition = new ActualPosition();
+    private ActualPosition actualPosition;
+
+    RouteManager rm = new RouteManager();
+    RoutePlan routePlan = new RoutePlan();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -61,7 +68,12 @@ public class BasicMapActivity extends AppCompatActivity {
         // Search for the map fragment to finish setup by calling init().
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.mapfragment);
         addressField = (TextView) findViewById(R.id.address);
+        countryField = (TextView) findViewById(R.id.country);
         okButton = (Button) findViewById(R.id.ok_button);
+        sendButton = (Button) findViewById(R.id.send_button);
+        sendButton.setEnabled(false);
+
+        actualPosition = new ActualPosition();
 
         mapFragment.init(new OnEngineInitListener() {
             @Override
@@ -116,7 +128,6 @@ public class BasicMapActivity extends AppCompatActivity {
                     public void onSuccess(int statusCode, Header[] headers, String response) {
                             Log.d("postObjectJSON", response.toString());
                             sendButton.setText("Success!");
-
                     }
                 });
 

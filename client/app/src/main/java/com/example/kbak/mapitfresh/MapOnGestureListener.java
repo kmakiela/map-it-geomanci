@@ -9,21 +9,26 @@ import com.here.android.mpa.common.GeoCoordinate;
 import com.here.android.mpa.common.ViewObject;
 import com.here.android.mpa.mapping.MapGesture;
 import com.here.android.mpa.mapping.Map;
+import com.here.android.mpa.mapping.MapMarker;
 import com.here.android.mpa.search.Address;
 import com.here.android.mpa.search.ErrorCode;
 import com.here.android.mpa.search.ResultListener;
 import com.here.android.mpa.search.ReverseGeocodeRequest;
 
+import java.io.IOException;
 import java.util.List;
 
 public class MapOnGestureListener implements GestureOverlayView.OnGestureListener, MapGesture.OnGestureListener {
     private Map map;
     private TextView addressField;
+    private TextView countryField;
     private ActualPosition actualPosition;
 
-    MapOnGestureListener(Map map, TextView addressField, ActualPosition actualPosition) {
+
+    MapOnGestureListener(Map map, TextView addressField, TextView countryField, ActualPosition actualPosition) {
         this.map = map;
         this.addressField = addressField;
+        this.countryField = countryField;
         this.actualPosition = actualPosition;
     }
 
@@ -55,10 +60,9 @@ public class MapOnGestureListener implements GestureOverlayView.OnGestureListene
         map.setCenter(new GeoCoordinate(position),
                 Map.Animation.LINEAR);
         map.setZoomLevel(level);
-        ResultListener<Address> listener = new TapGeocodeListener(addressField);
+        ResultListener<Address> listener = new TapGeocodeListener(addressField, countryField);
         ReverseGeocodeRequest request = new ReverseGeocodeRequest(position);
         actualPosition.position = position;
-
         if (request.execute(listener) != ErrorCode.NONE){
             addressField.setText("Invalid starting point");
         }
