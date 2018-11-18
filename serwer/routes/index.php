@@ -88,5 +88,4 @@ function calculateRouteAttr($lat1,$lon1,$lat2,$lon2)
 //var_dump(calculateRouteAttr(51.5,21.4,51.5,21.43));
 var_dump (calculateRouteAttr(50.060865, 19.791230,50.060865, 19.991230));
 //var_dump calculateRouteAttr(50.229878, 19.074875,50.060865, 19.991230);
-
 ?>
