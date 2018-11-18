@@ -128,12 +128,10 @@ public class BasicMapActivity extends AppCompatActivity {
                     public void onSuccess(int statusCode, Header[] headers, String response) {
                             Log.d("postObjectJSON", response.toString());
                             sendButton.setText("Success!");
-                            
                     }
                 });
 
                 rm.calculateRoute(routePlan, new RouteListener());
-
             }
         });
     }
