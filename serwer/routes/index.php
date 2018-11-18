@@ -1,18 +1,18 @@
 <?php
 putenv("HOME=/");
 
-function getRoutePointsFromHERE($lat1,$lon1,$lat2,$lon2)
+function getRouteDataFromHERE($lat1,$lon1,$lat2,$lon2)
 {
     $req = 'https://route.api.here.com/routing/7.2/calculateroute.xml?app_id=8MjVb7liRiSs2lgwa7tE&app_code=WqFBNSAzOaPX7pEr-R8SNg&waypoint0=geo!'.$lat1.'%2C'.$lon1.'&waypoint1=geo!'.$lat2.'%2C'.$lon2.'&mode=fastest;car;traffic:disabled;motorway:-2';
     $xml = simplexml_load_file($req);
     $xmlLeg = $xml->Response->Route->Leg;
     $points = array();
     foreach($xmlLeg->Maneuver as $item)
-        $points[] = array((string)$item->Position->Latitude,(string)$item->Position->Longitude, (string) $item->Length);
-    return $points;
+        $points[] = array((string)$item->Position->Latitude,(string)$item->Position->Longitude, (float) $item->Length);
+    return array($points,(int)$xmlLeg->Length,(int)$xmlLeg->TravelTime);
 }
 
-function get5SensorsFromAirly($lat,$lon)
+function get5SensorsFromCachedAirly($lat,$lon)
 {
     $apikey="8diOeIk73yDuFZTe4ruo9CjGRDUFx4Br";
     $heads = array(
@@ -33,36 +33,60 @@ function get5SensorsFromAirly($lat,$lon)
     $returnData=array();
     foreach ($senMetas as $senMeta)
     {
-        $req2 = 'https://airapi.airly.eu/v2/measurements/installation?installationId='.$senMeta[2];
-        $sensordata = json_decode(file_get_contents($req2,false,$context));
-        $values = $sensordata->current->values;
-        $value = $values[2]->value;
+        $cached_sensor_data = json_decode(file_get_contents('saved_sensor_data.json'), true);
+        $value = $cached_sensor_data[$senMeta[2]];
         $returnData[] = array($senMeta[0],$senMeta[1],$value);
     }
     return $returnData;
 }
 
-
-
-$returnData="";
-$points = getRoutePointsFromHERE(51.5,21.4,51.5,21.42);
-foreach($points as $point)
+function d($lat1,$lon1,$lat2,$lon2)
 {
-    $sensors = get5SensorsFromAirly($point[0], $point[1]);
-
-    $returnData.=$point[0].','.$point[1].','.$point[2].';';
-    foreach($sensors as $sensor)
-        $returnData.=$sensor[0].','.$sensor[1].','.$sensor[2].',';
-    $returnData = substr($returnData,0,strlen($returnData)-1).";";
+    return sqrt(pow($lat1-$lat2,2)+pow($lon1-$lon2,2));
 }
-echo $returnData;
-file_put_contents("smogitude_input.csv",$returnData);
 
-$output="";
-exec('python smogitude.py3',$output);
-for($i = 0; $i < count($output); $i++) {
-    echo $output[$i];
-    echo "<br>";
+function calculateRouteAttr($lat1,$lon1,$lat2,$lon2)
+{
+    $HERE = getRouteDataFromHERE($lat1,$lon1,$lat2,$lon2);
+    $points=$HERE[0];
+    $points_wAvg=array();
+    foreach($points as $point)
+    {
+        $lat=$point[0];
+        $len=$point[1];
+        $sensors = get5SensorsFromCachedAirly($lat,$len);
+
+        $weightedSum = 0;
+        $weights =0;
+
+        foreach ($sensors as $sensor)
+        {
+            $d=d($lat,$len,$sensor[0],$sensor[1]);
+            if($d!=0)$ratio=(1/$d);
+            else
+            {
+                $weightedSum=$sensor[2];
+                $weights=1;
+                break;
+            }
+            $weightedSum += $ratio*$sensor[2];
+            $weights +=$ratio;
+        }
+        $average=$weightedSum/$weights;
+        $points_wAvg[] = array($point[2],$average);
+    }
+    $smogitude=0.0;
+    for ($i=0;$i<count($points_wAvg)-1;$i++)
+    {
+        $smogitude += (($points_wAvg[$i][1] + $points_wAvg[$i + 1][1]) / 2) * $points_wAvg[$i][0];
+    }
+    return array('length'=>$HERE[1],'time'=>$HERE[2],'smogitude'=>$smogitude);
 }
+
+//fetchAirlyData();
+
+//var_dump(calculateRouteAttr(51.5,21.4,51.5,21.43));
+var_dump (calculateRouteAttr(50.060865, 19.791230,50.060865, 19.991230));
+//var_dump calculateRouteAttr(50.229878, 19.074875,50.060865, 19.991230);
 
 ?>
