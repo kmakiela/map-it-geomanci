@@ -104,10 +104,6 @@ public class MapOnGestureListener implements GestureOverlayView.OnGestureListene
 
     @Override
     public boolean onTwoFingerTapEvent(PointF p) {
-        double level = map.getMinZoomLevel() + map.getMaxZoomLevel() / 2;
-        map.setCenter(new GeoCoordinate(49.196261, -123.004773),
-                Map.Animation.NONE);
-        map.setZoomLevel(level);
         return true;
     }
 
