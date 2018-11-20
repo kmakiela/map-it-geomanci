@@ -1,6 +1,7 @@
 package com.example.kbak.mapitfresh;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
@@ -16,6 +17,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import com.here.android.mpa.common.GeoCoordinate;
 import com.here.android.mpa.common.Image;
 import com.here.android.mpa.common.OnEngineInitListener;
@@ -28,6 +34,7 @@ import com.here.android.mpa.mapping.MapMarker;
 import com.here.android.mpa.mapping.MapObject;
 import com.here.android.mpa.mapping.MapRoute;
 import com.here.android.mpa.routing.RouteManager;
+import com.here.android.mpa.routing.RouteOptions;
 import com.here.android.mpa.routing.RoutePlan;
 import com.here.android.mpa.routing.RouteResult;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -35,10 +42,13 @@ import com.loopj.android.http.RequestParams;
 import com.loopj.android.http.TextHttpResponseHandler;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
+
+import static java.lang.Thread.sleep;
 
 public class BasicMapActivity extends AppCompatActivity {
 
@@ -57,11 +67,17 @@ public class BasicMapActivity extends AppCompatActivity {
 
     RouteManager rm = new RouteManager();
     RoutePlan routePlan = new RoutePlan();
+    RoutePlan routePlan2 = new RoutePlan();
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initialize();
+        RouteOptions options = new RouteOptions();
+        options.setTransportMode(RouteOptions.TransportMode.PEDESTRIAN);
+        routePlan2.setRouteOptions(options);
+        routePlan.setRouteOptions(options);
     }
 
     private void initialize() {
@@ -138,10 +154,46 @@ public class BasicMapActivity extends AppCompatActivity {
                     public void onSuccess(int statusCode, Header[] headers, String response) {
                         Log.d("succJSON", response.toString());
                         sendButton.setText("Success!");
+                        //Intent intent = new Intent(BasicMapActivity.this, ChooseRouteActivity.class);
+                        //startActivity(intent);
                     }
                 });
+                try{
+                    sleep(60000);
 
+                } catch(InterruptedException e ){
+                    e.printStackTrace();
+                }
+             RESTprovider.get("/result", null, new TextHttpResponseHandler() {
+                @Override
+                public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                    Log.d("failJSON2", throwable.toString());
+                }
+
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, String response) {
+                    Log.d("succJSON2", response.toString());
+                    JsonElement elem = new JsonParser().parse(response);
+                    JsonObject jobj = elem.getAsJsonObject();
+                    JsonArray jarr = jobj.getAsJsonArray("route");
+                    Float smog = jobj.getAsJsonPrimitive("smog_intake").getAsFloat();
+                    for( JsonElement job : jarr){
+                        Log.d("decode json", job.toString());
+                        Float lat = job.getAsJsonObject().getAsJsonPrimitive("lat").getAsFloat();
+                        Float lon = job.getAsJsonObject().getAsJsonPrimitive("lon").getAsFloat();
+                        routePlan2.addWaypoint(new GeoCoordinate(lat, lon));
+                    }
+
+
+
+
+                    sendButton.setText("Success!");
+                    //Intent intent = new Intent(BasicMapActivity.this, ChooseRouteActivity.class);
+                    //startActivity(intent);
+                }
+            });
                 rm.calculateRoute(routePlan, new RouteListener());
+                rm.calculateRoute(routePlan2, new RouteListener());
 
             }
         });
